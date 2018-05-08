@@ -181,7 +181,10 @@ func MarshalStruct(input interface{}, options *MarshalOptions) ([]byte, error) {
 		// with an uppercase letter) we must change it to lower case. If
 		// you really do want it to be upper case you will have to wait
 		// for when tags are supported on individual fields.
-		fieldName := lowerCaseFirstLetter(typeOfValue.Field(i).Name)
+		fieldName := typeOfValue.Field(i).Tag.Get("php")
+		if fieldName == "" {
+			fieldName = lowerCaseFirstLetter(typeOfValue.Field(i).Name)
+		}
 		buffer.Write(MarshalString(fieldName))
 
 		m, err := Marshal(f.Interface(), options)

@@ -172,10 +172,20 @@ func consumeObjectAsMap(data []byte, offset int) (
 
 func setField(obj interface{}, name string, value interface{}) error {
 	structValue := reflect.ValueOf(obj).Elem()
-
+	structType := reflect.TypeOf(obj)
+	var structFieldValue reflect.Value
 	// We need to uppercase the first letter for compatibility.
 	// The Marshal() function does the opposite of this.
-	structFieldValue := structValue.FieldByName(upperCaseFirstLetter(name))
+	for i := 0; i < structValue.NumField(); i++ {
+		key := structType.Field(i).Tag.Get("php")
+		if key == name {
+			structFieldValue = structValue.Field(i)
+			break
+		}
+	}
+	if structFieldValue.IsNil() {
+		structFieldValue = structValue.FieldByName(upperCaseFirstLetter(name))
+	}
 
 	if !structFieldValue.IsValid() {
 		return fmt.Errorf("no such field: %s in obj", name)
